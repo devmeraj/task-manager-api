@@ -60,7 +60,22 @@ userSchema.methods.generateWebToken = function () {
     const user = this;
     const token = jwt.sign({_id: user._id.toString()}, process.env.JWT_SECRET_KEY, {expiresIn: '7 days'});
     user.tokens.push({token});
+
     return token;
+}
+
+userSchema.statics.findAndLogin = async (email, password) => {
+    
+    const user =  await User.findOne({email});
+    if(!user){
+        throw new Error("Invalid Login...")
+    }
+    const isValidLogin = await bcrypt.compare(password, user.password);
+    
+    if(isValidLogin){
+        return user;
+    }
+    throw new Error('Invalid Login....')
 }
 
 userSchema.indexes();
